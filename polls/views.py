@@ -1,16 +1,24 @@
 "layout of the polls app"
-
 from django.http import HttpResponse
+from django.shortcuts import render, get_object_or_404
+
+from .models import Question
 
 
-def index(_):
-    "root to ensure no root 404"
-    return HttpResponse("Hello world from polls!")
+def index(request):
+    "show some recent questions at root"
+    latest_question_list = Question.objects.order_by("-pub_date")[:5]
+    return render(request, "polls/index.html", {
+        'latest_question_list': latest_question_list
+    })
 
 
-def detail(_, question_id):
+def detail(request, question_id):
     "just print some information about a question"
-    return HttpResponse(f"question id {question_id}")
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, 'polls/detail.html', {
+        "question": question
+    })
 
 
 def result(_, question_id):
