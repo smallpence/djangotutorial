@@ -1,8 +1,9 @@
 "layout of the polls app"
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 
-from .models import Question
+from .models import Question, Choice
 
 
 def index(request):
@@ -21,11 +22,25 @@ def detail(request, question_id):
     })
 
 
-def result(_, question_id):
+def result(request, question_id):
     "show the current results for a question"
-    return HttpResponse(f"question results for {question_id}")
+    question = get_object_or_404(Question, pk=question_id)
+    return render(request, "polls/results.html", {
+        'question': question
+    })
 
 
-def vote(_, question_id):
+def vote(request, question_id):
     "allow user to vote for a question"
-    return HttpResponse(f"question voting for {question_id}")
+    question = get_object_or_404(Question, pk=question_id)
+    try:
+        selected_choice = question.choice_set.get(pk=request.POST['choice'])
+    except (KeyError, Choice.DoesNotExist):
+        return render(request, 'polls/detail.html', {
+            'question': question,
+            'error_message': "Invalid choice"
+        })
+    else:
+        selected_choice.votes += 1
+        selected_choice.save()
+        return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
