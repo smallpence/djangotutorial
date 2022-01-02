@@ -2,32 +2,31 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
+from django.views import generic
 
 from .models import Question, Choice
 
 
-def index(request):
-    "show some recent questions at root"
-    latest_question_list = Question.objects.order_by("-pub_date")[:5]
-    return render(request, "polls/index.html", {
-        'latest_question_list': latest_question_list
-    })
+class IndexView(generic.ListView):
+    "auto generated view for page root, displaying latest 5 qs"
+    template_name = "polls/index.html"
+    context_object_name = "latest_question_list"
+
+    def get_queryset(self):
+        "yield the context object (5 latest questions)"
+        return Question.objects.order_by("-pub_date")[:5]
 
 
-def detail(request, question_id):
-    "just print some information about a question"
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, 'polls/detail.html', {
-        "question": question
-    })
+class DetailView(generic.DetailView):
+    "auto generated view detailing a question"
+    model = Question
+    template_name = "polls/detail.html"
 
 
-def result(request, question_id):
-    "show the current results for a question"
-    question = get_object_or_404(Question, pk=question_id)
-    return render(request, "polls/results.html", {
-        'question': question
-    })
+class ResultsView(generic.DetailView):
+    "auto generated view detailing a question"
+    model = Question
+    template_name = "polls/results.html"
 
 
 def vote(request, question_id):
